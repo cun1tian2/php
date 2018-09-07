@@ -1,0 +1,106 @@
+<html>
+<head><meta http-equiv=Content-Type content="text/html;charset=UTF-8"><title>help dbt.php</title></head>
+<pre>
+<h3>==== php info tips  help.htm ====------------------------</h3>
+<big><b>==== Newly Tips ====</b></big>
+●@ エラー制御演算子 @ 式の前に付けた場合その式により生成されたｴﾗｰﾒｯｾｰｼﾞは無視
+　& 関数 & 参照渡し
+　　???　function foo(&$var){$var++;} $a=5; echo foo($a); //⇒ 6
+    ??? error_reporting(E_ERROR | E_WARNING | E_PARSE | E_NOTICE); //
+●ブラウザ画面ｴﾗｰ表示 &lt;?php .. 内に
+　error_reporting(E_ALL); ini_set('display_errors',1);	// 0:エラー非表示 
+　(注)phpエラー行の番号表示は改行毎で、html部、&lt;?php ..、ﾋｱﾄﾞｷｭﾒﾝﾄ始端本体終端、を含めｽｸﾘﾌﾟﾄｿｰｽ上の実改行毎に1行、ｴﾃﾞｨﾀｰの自動折返しは非改行扱い。
+●シンボル＝識別子テーブル
+グローバル変数全変数一覧var_dump($GLOBALS); 現scopeの変数一覧get_defined_vars() ﾕｰｻﾞ定義を含む関数一覧get_defined_functions()、
+●関数 array list(mixed $var1 [, mixed $... ])  ×× 何とも不可解？
+関数でなく言語構造、数値添字の配列でのみ動作、添字は0から始まることを想定、PHP5では右のﾊﾟﾗﾒｰﾀから代入、PHP7では左のﾊﾟﾗﾒｰﾀから、
+その他添字配列を使用している場合、配列の添字の順番がlist()に書いたものと同じく左から右となることを通常は期待しますが、PHP5ではそうはなりません。この配列の添字は逆の順番となる、一般論として特定の操作順に依存することは避ける、将来その順番が変更される可能性がある。
+●phpﾌｧｲﾙ読込
+apatcheﾓｼﾞｭｰﾙ動作では、include|require"xx.ext"; ()不要、拡張子不問、要ﾀｸﾞ&lt;?php...?&gt;、&lt;?ﾀｸﾞ無いと記述ｺｰﾄﾞのまま出力。
+html内でのphp読込は&lt;?php require "";　?&gt;、又は&lt;script src=xx.php&gt;&lt;/script&gt;。
+●配列関数
+変数生成 list($var1,,)=$ary; 配列変数化cextract($ary,EXTRA_PREFIX_ALL,"sep"); => $xx_??
+変数配列化compact() 
+str配列化explode("sep",$str,[limit]) 配列str化implode("sep",$ary){別名join()}
+ serialize/unserialize  
+●多重配列例 $a=[5=>null,bbb=>[key=>"2"],888]; $a[bbb][key]="9999"; echo var_dump($a),var_dump($a[bbb][key]);
+●日時 date_default_timezone_set("Asia/Tokyo"); date("Y.n.j H:i(TP)"); ⇒ 2018.7.9 15:2(TP) 要時差補整
+●shell可サイト：btb,stmx,tk2,xre,　不可：3abiz,byet16,hstngr,rbn,　(tk2はcb/dbt.cgi、geojはphp不動作?
+●if(aa)echo a;→if構文で1実行文の{}は不要
+●if(aa)echo a;、条件否定はif(! $aa)、if!($aa)は構文エラー
+●php文の";"は必須 dbt.phpでも同じ●、dbt.phpのcmdlでは"'"化ける、cmdaエリアでは"'"化けない
+●配列生成時キー""無くても可、参照時キー""必須(無いと未定義警告)
+syntxチェック echo `/usr/bin/php -l dbt.php 2>&1`;
+警告付き実行  echo `/usr/bin/php -f dbt.php 2>&1`;
+ワンライナー　echo `/usr/bin/php -r 'echo 11;'`;
+<?php..?>、<?..?>はphp.iniで用設定の為非推奨、純粋なPHPコードのみの場合終了タグ省略が推奨( 終了タグ後に余分があると出力バッファリング開始出力してしまう)
+
+itself $_SERVER['PHP_SELF'] ['SCRIPT_NAME'] ['REQUEST_URI'] ⇒ /p/dbt.php (rawUse OK
+       __FILE__ ⇒ /virtual/hana/public_html/p/dbt.php(nn)                (rawUse NG
+
+// echo `/usr/bin/php -l sdml.php 2>&1`;
+// array()  list()  var_dump()  print_r($xx,true);
+// true|false　[un]define[ed]　 (0|"")  null  isset()　unset()  empty()  is_null()
+//配列ファイル出力   file_put_contents("tmp.txt", serialize($dataArray));
+//配列ファイル入力   $dataArray = unserialize(file_get_contents("tmp.txt"));
+
+unix(curl wget) 標準出力`wget http://.../ -O -`;  `curl http://.../`
+php(curl)
+ $fh=curl_init();
+ curl_setopt($fh,CURLOPT_URL,"http://.../");
+ curl_setopt($fh,CURLOPT_RETURNTRANSFER, true); //true設定でcurl_exec()を文字列で返す
+ echo curl_exec($fh);
+
+<big><b>====php tips====</b></big>
+　　→evernote
+getFile  echo file_get_contents("url");
+cURL     $ch=curl_init(); curl_setopt($ch,CURLOPT_URL,"url"); curl_exec($ch); curl_close($ch);
+		 	//echoしなくてもcurl_closeで結果出力、closeしないと出力されない。
+●Plan:　dirリストstat化、helpファイル、、
+実行権：
+ApacheがPHPソースを読込みPHPモジュールとして実行する為MD644で可、#!/usr/bin/phpでのCGI実行時はMD701等が必要
+
+php環境変数			phpinfo();			#echo print 不要
+$_SERVER環境変数	ksort($_SERVER);foreach($_SERVER as $key=>$value){print"$key=>$value\n";}
+dirリスト			$d=opendir(".");echo"[open=$d]\n";while($f=readdir($d)){echo"$f\n";}
+
+<big><b>==== CF. ====</b></big>
+PHPのデバッグに便利な関数 http://techblog.ecstudio.jp/tech-tips/php/debug-basics.html
+– 基本編 echo/print print_r var_dump(print_rの詳細版) debug_backtrace glob get_included_files get_defined_constants
+– 応用編 debuglib dBug
+- あると便利な小さい自作関数
+ cprint_r print_rの表示結果をHTMLタグに埋めこんで表示
+ die_r dieのprint_r版
+ count_hook 特定の回数コールされるとtrueを返し
+ count_die count_hookのdie版
+PHPで日本語メールを送る – 基本編 – 応用編 (添付ファイル、HTMLメール)
+もっと前に知っておきたかった！と思うSmartyのTips
+
+<big><b>====small utility===============================</b></big>
+<big><b>$_POST[cmda]操作</b></big>
+[cmda] ＜  /* ...*/ ,or rawData.(*syntxErrOK)  [cmdl] ＜ echo; $_POST[cmda]; 
+<big><b>File操作</b></big>
+array=file(URL);
+readfile(URL) ＞ STDOOT 返値:文字数
+  ??? int readfile(string $filename [,bool $use_include_path=FALSE [,resource $context]] )
+file_get_contents(URL) file_put_contents(URL)
+FP=fopen(URL,mode(r|r+|w|w+|a|a+) );   fgets(FP,len)    fputs(FP,len){ =fwrite() }
+touch(filnm); unlink(filnm);   array stat(filnm); array lstat(filnm);
+
+htmlspecialchars()  特殊文字をHTMLｴﾝﾃｨﾃｨ変換　&⇒&amp;amp; "⇒&amp;quot; '⇒(&amp;#039;|&amp;apos; 条件有) <⇒&amp;lt; >⇒&amp;gt;
+htmlentities()	    適用可能文字全てHTMLｴﾝﾃｨﾃｨ変換	
+<big><b>====site info===============================</b></big>
+byethost16		7019
+hostngrjp(esy.es	5535
+btb 			7206
+rbn			5217
+stmx			5531
+xrek1(ma:)		7030	sh avl
+xre601(sb:)		7030	〃
+  NG：tk243aym2 NG cgiNG, fc2, yahgeoj(eclg|kjjm4), 03a.bizNotAvl。
+
+disable_functions: xrek1:no 3abiz:many19lines bythst16:many19lines71items hstnger(esy.es:many28items
+
+====EOF=======================================
+</pre>
+</html
